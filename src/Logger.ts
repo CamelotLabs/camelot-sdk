@@ -55,7 +55,8 @@ export class Logger {
         this.createLog(message, "ERROR", errorCode, trace);
     }
 
-    static warn(message: string, errorCode?: string, trace?: string): void {
+    static warn(params: LogMessage): void {
+        const { message, errorCode, trace } = params;
         this.createLog(message, "WARN", errorCode, trace);
     }
 
@@ -63,7 +64,8 @@ export class Logger {
         if (this.config.debug) this.createLog(message, "DEBUG");
     }
 
-    static critical(message: string, errorCode?: string, trace?: string): void {
+    static critical(params: LogMessage): void {
+        const { message, errorCode, trace } = params;
         this.createLog(message, "CRITICAL", errorCode, trace);
     }
 }
