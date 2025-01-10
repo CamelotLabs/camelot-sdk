@@ -1,15 +1,4 @@
-import { LogLevel, LogMessage, LoggerConfig } from "./types";
-
-interface LogEntry {
-    timestamp: string;
-    level: LogLevel;
-    message: string;
-    worker: string;
-    chain?: string;
-    environment?: string;
-    error_code?: string;
-    stack_trace?: string;
-}
+import { LogLevel, LogMessage, LoggerConfig, LogEntry } from "./types";
 
 export class Logger {
     private static config: LoggerConfig = {
@@ -31,7 +20,8 @@ export class Logger {
             level: level,
             message: message,
             worker: this.config.workerName!,
-            chain: this.config.chainId,
+            chain: this.config.chainName,
+            chain_id: this.config.chainId,
             environment: this.config.environment,
         }
         if (level === "ERROR" || level === "CRITICAL" || level === "WARN") {
