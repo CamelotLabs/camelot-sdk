@@ -21,6 +21,7 @@ Logger.configure({
     debug: true,
     workerName: 'worker-name',
     chainId: '1',
+    chainName: 'arbitrum',
     environment: 'staging || prod'
 });
 ```
