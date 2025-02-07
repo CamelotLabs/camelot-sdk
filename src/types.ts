@@ -1,6 +1,6 @@
 export type LogLevel = "INFO" | "ERROR" | "WARN" | "DEBUG" | "CRITICAL";
 
-export interface LogMessage {
+export interface LogError {
     message: string;
     errorCode?: string;
     trace?: string;
@@ -25,4 +25,5 @@ export interface LogEntry {
     environment?: string;
     error_code?: string;
     stack_trace?: string;
+    metadata?: object;
 }
