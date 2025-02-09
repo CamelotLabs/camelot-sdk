@@ -1,4 +1,4 @@
-import { LogLevel, LogMessage, LoggerConfig, LogEntry } from "./types";
+import { LogLevel, LoggerConfig, LogEntry, LogError } from "./types";
 
 export class Logger {
     private static config: LoggerConfig = {
@@ -14,15 +14,22 @@ export class Logger {
         };
     }
 
-    static createLog(message: string, level: LogLevel, errorCode?: string, trace?: string): void {
+    static createLog({message, level, errorCode, trace, metadata = {}}: { 
+        message: string; 
+        level: LogLevel; 
+        errorCode?: string; 
+        trace?: string; 
+        metadata?: object 
+      }): void {
         const log: LogEntry = {
             timestamp: new Date().toISOString(),
-            level: level,
-            message: message,
+            level,
+            message,
             worker: this.config.workerName!,
             chain: this.config.chainName,
             chain_id: this.config.chainId,
             environment: this.config.environment,
+            metadata
         }
         if (level === "ERROR" || level === "CRITICAL" || level === "WARN") {
             log.error_code = errorCode;
@@ -36,26 +43,26 @@ export class Logger {
         }
     }
 
-    static info(message: string): void {
-        this.createLog(message, "INFO");
+    static info(message: string, metadata?: object): void {
+        this.createLog({message, level: "INFO", metadata});
     }
 
-    static error(params: LogMessage): void {
+    static debug(message: string, metadata?: object): void {
+        if (this.config.debug) this.createLog({message, level: "DEBUG", metadata});
+    }
+
+    static error(params: LogError, metadata?: object): void {
         const { message, errorCode, trace } = params;
-        this.createLog(message, "ERROR", errorCode, trace);
+        this.createLog({message, level: "ERROR", errorCode, trace, metadata});
     }
 
-    static warn(params: LogMessage): void {
+    static warn(params: LogError, metadata?: object): void {
         const { message, errorCode, trace } = params;
-        this.createLog(message, "WARN", errorCode, trace);
+        this.createLog({message, level: "WARN", errorCode, trace, metadata});
     }
 
-    static debug(message: string): void {
-        if (this.config.debug) this.createLog(message, "DEBUG");
-    }
-
-    static critical(params: LogMessage): void {
+    static critical(params: LogError, metadata?: object): void {
         const { message, errorCode, trace } = params;
-        this.createLog(message, "CRITICAL", errorCode, trace);
+        this.createLog({message, level: "CRITICAL", errorCode, trace, metadata});
     }
 }
