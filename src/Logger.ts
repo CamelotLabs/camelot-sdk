@@ -4,7 +4,8 @@ export class Logger {
     private static config: LoggerConfig = {
         prettyLogs: false,
         debug: false,
-        workerName: "default-worker"
+        workerName: "default-worker",
+        metadata: {}
     };
 
     static configure(config: LoggerConfig): void {
@@ -14,6 +15,14 @@ export class Logger {
         };
     }
 
+    static setLogMetadata(metadata: object): void {
+        this.config.metadata = metadata;
+    }
+
+    static clearLogMetadata(): void {
+        this.config.metadata = {};
+    }
+
     static createLog({message, level, errorCode, trace, metadata = {}}: { 
         message: string; 
         level: LogLevel; 
@@ -21,6 +30,10 @@ export class Logger {
         trace?: string; 
         metadata?: object 
       }): void {
+        const metadataMerged = {
+            ...Logger.config.metadata,
+            ...metadata
+        };
         const log: LogEntry = {
             timestamp: new Date().toISOString(),
             level,
@@ -29,7 +42,7 @@ export class Logger {
             chain: this.config.chainName,
             chain_id: this.config.chainId,
             environment: this.config.environment,
-            metadata
+            metadata: metadataMerged
         }
         if (level === "ERROR" || level === "CRITICAL" || level === "WARN") {
             log.error_code = errorCode;

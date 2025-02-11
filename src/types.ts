@@ -13,6 +13,7 @@ export interface LoggerConfig {
     workerName?: string;
     prettyLogs?: boolean;
     debug?: boolean;
+    metadata?: object;
 }
 
 export interface LogEntry {
