@@ -1,2 +1,2 @@
 export { Logger } from './Logger';
-export type { LogLevel, LogMessage, LoggerConfig } from './types'; 
+export type { LogLevel, LogEntry, LogError, LoggerConfig } from './types';
