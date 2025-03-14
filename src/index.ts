@@ -1,2 +1,3 @@
 export { Logger } from './Logger';
-export type { LogLevel, LogMessage, LoggerConfig } from './types'; 
+export { Redis } from './Redis';
+export type { LogLevel, LoggerConfig } from './types'; 
