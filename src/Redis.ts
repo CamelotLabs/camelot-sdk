@@ -170,4 +170,20 @@ export class Redis {
     const key = this.buildKey(...keyParts);
     return this.redis.srem(key, ...validValues);
   }
+
+  public static async addToSet(keyParts: string[], ...values: any[]): Promise<any> {
+    // If no values to add, return early
+    if (!values || values.length === 0) {
+      return 0;
+    }
+
+    // Filter out any null or undefined values
+    const validValues = values.filter(Boolean);
+    if (validValues.length === 0) {
+      return 0;
+    }
+
+    const key = this.buildKey(...keyParts);
+    return this.redis.sadd(key, ...validValues);
+  }
 }
