@@ -171,6 +171,11 @@ export class Redis {
     return this.redis.srem(key, ...validValues);
   }
 
+  public static async getSetLength(keyParts: string[]): Promise<number> {
+    const key = this.buildKey(...keyParts);
+    return this.redis.scard(key);
+  }
+
   public static async addToSet(keyParts: string[], ...values: any[]): Promise<any> {
     // If no values to add, return early
     if (!values || values.length === 0) {
