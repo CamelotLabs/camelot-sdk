@@ -27,6 +27,11 @@ export class Redis {
     return this.redis.hgetall(key);
   }
 
+  public static async getHashField(keyParts: string[], field: string): Promise<string | null> {
+    const key = this.buildKey(...keyParts);
+    return this.redis.hget(key, field);
+  }
+
   public static async createSet(keyParts: string[], values: any[]): Promise<any> {
     const key = this.buildKey(...keyParts);
 
