@@ -126,25 +126,26 @@ export class Redis {
       type: 'hash' | 'set' | 'string' | 'hashField';
       data: any;
       field?: string;
-      del?: boolean
+      del?: boolean;
     }[]
   ): Promise<any> {
     const pipeline = this.redis.pipeline();
+
 
     for (const op of ops) {
       const key = this.buildKey(...op.keyParts);
 
       if (op.type === 'hash') {
-        op.del ? pipeline.hdel(key, op.data): pipeline.hset(key, op.data);
+        op.del ? pipeline.hdel(key, ...op.data): pipeline.hset(key, op.data);
       } else if (op.type === 'hashField') {
         if (op.field === undefined) {
           throw new Error('Field is required for hashField operations');
         }
-        op.del ? pipeline.hdel(key, { [op.field]: op.data }) : pipeline.hset(key, { [op.field]: op.data });
+        op.del ? pipeline.hdel(key, ...op.data) : pipeline.hset(key, { [op.field]: op.data });
       } else if (op.type === 'set') {
         op.del ? pipeline.srem(key, ...op.data) : pipeline.sadd(key, ...op.data);
       } else if (op.type === 'string') {
-        op.del ? pipeline.del(key, op.data) : pipeline.set(key, op.data);
+        op.del ? pipeline.del(key) : pipeline.set(key, op.data);
       }
     }
 
