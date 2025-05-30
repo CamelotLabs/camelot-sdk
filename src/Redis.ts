@@ -121,34 +121,37 @@ export class Redis {
   }
 
   public static async pipelineSet(
-    ops: { 
-      keyParts: string[]; 
-      type: 'hash' | 'set' | 'string' | 'hashField'; 
+    ops: {
+      keyParts: string[];
+      type: 'hash' | 'set' | 'string' | 'hashField';
       data: any;
       field?: string;
+      del?: boolean;
     }[]
   ): Promise<any> {
     const pipeline = this.redis.pipeline();
+
 
     for (const op of ops) {
       const key = this.buildKey(...op.keyParts);
 
       if (op.type === 'hash') {
-        pipeline.hset(key, op.data);
+        op.del ? pipeline.hdel(key, ...op.data): pipeline.hset(key, op.data);
       } else if (op.type === 'hashField') {
         if (op.field === undefined) {
           throw new Error('Field is required for hashField operations');
         }
-        pipeline.hset(key, { [op.field]: op.data });
+        op.del ? pipeline.hdel(key, ...op.data) : pipeline.hset(key, { [op.field]: op.data });
       } else if (op.type === 'set') {
-        pipeline.sadd(key, ...op.data);
+        op.del ? pipeline.srem(key, ...op.data) : pipeline.sadd(key, ...op.data);
       } else if (op.type === 'string') {
-        pipeline.set(key, op.data);
+        op.del ? pipeline.del(key) : pipeline.set(key, op.data);
       }
     }
 
     return pipeline.exec();
   }
+
 
   public static async getBasicInfoForItems(itemIds: string[]): Promise<any> {
     const pipeline = this.redis.pipeline();
