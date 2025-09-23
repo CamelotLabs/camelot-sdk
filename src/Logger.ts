@@ -5,6 +5,7 @@ export class Logger {
         prettyLogs: false,
         debug: false,
         workerName: "default-worker",
+        project: "camelot",
         metadata: {}
     };
 
@@ -50,6 +51,7 @@ export class Logger {
             chain: this.config.chainName,
             chain_id: this.config.chainId,
             environment: this.config.environment,
+            project: this.config.project,
             metadata: metadataMerged
         }
         if (level === "ERROR" || level === "CRITICAL" || level === "WARN") {
