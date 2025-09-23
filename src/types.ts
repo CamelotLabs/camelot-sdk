@@ -11,6 +11,7 @@ export interface LoggerConfig {
     chainId?: string;
     environment?: string;
     workerName?: string;
+    project?: string;
     prettyLogs?: boolean;
     debug?: boolean;
     metadata?: object;
@@ -24,6 +25,7 @@ export interface LogEntry {
     chain?: string;
     chain_id?: string;
     environment?: string;
+    project?: string;
     error_code?: string;
     stack_trace?: string;
     metadata?: object;
