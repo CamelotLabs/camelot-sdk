@@ -5,7 +5,7 @@ export class Logger {
         prettyLogs: false,
         debug: false,
         workerName: "default-worker",
-        project: "camelot",
+        project: "default-project",
         metadata: {}
     };
 
