@@ -1,7 +1,28 @@
 import { Redis as UpstashRedis } from '@upstash/redis';
+import * as zlib from 'zlib';
 
 export class Redis {
   private static redis: any;
+
+  // Marker prefix for gzip-compressed string values. Stored payloads that start
+  // with this are gzip+base64 of the JSON; anything else is treated as a plain
+  // (legacy/uncompressed) value, so reads transparently handle both forms.
+  private static readonly GZIP_PREFIX = 'gz:';
+
+  // Mirror Upstash's own JSON serialization, but gzip the JSON. Drop-in: the
+  // value returned by decompress is identical to what an uncompressed get yields.
+  private static compress(value: any): string {
+    const json = JSON.stringify(value);
+    return Redis.GZIP_PREFIX + zlib.gzipSync(Buffer.from(json)).toString('base64');
+  }
+
+  private static maybeDecompress(value: any): any {
+    if (typeof value === 'string' && value.startsWith(Redis.GZIP_PREFIX)) {
+      const buf = Buffer.from(value.slice(Redis.GZIP_PREFIX.length), 'base64');
+      return JSON.parse(zlib.gunzipSync(buf).toString());
+    }
+    return value;
+  }
 
   public static configure(upstashRedisRestURL: string, upstashRedisRestToken: string): void {
     if (!upstashRedisRestURL || !upstashRedisRestToken) {
@@ -67,14 +88,18 @@ export class Redis {
     return this.redis.smembers(key);
   }
 
-  public static async setString(keyParts: string[], value: string): Promise<any> {
+  public static async setString(
+    keyParts: string[],
+    value: any,
+    opts?: { compress?: boolean }
+  ): Promise<any> {
     const key = this.buildKey(...keyParts);
-    return this.redis.set(key, value);
+    return this.redis.set(key, opts?.compress ? this.compress(value) : value);
   }
 
-  public static async getString(keyParts: string[]): Promise<string | null> {
+  public static async getString(keyParts: string[]): Promise<any> {
     const key = this.buildKey(...keyParts);
-    return this.redis.get(key);
+    return this.maybeDecompress(await this.redis.get(key));
   }
 
   public static async addToSortedSet(keyParts: string[], score: number, member: string): Promise<any> {
@@ -115,9 +140,12 @@ export class Redis {
     }
 
     const results = await pipeline.exec();
-    return keys.map((_, i) =>
-      mapping[i] === null ? null : results[mapping[i] as number]
-    );
+    return keys.map((_, i) => {
+      if (mapping[i] === null) return null;
+      const result = results[mapping[i] as number];
+      // string results may be compressed blobs; sets/hashes are never compressed
+      return types[i] === 'string' ? this.maybeDecompress(result) : result;
+    });
   }
 
   public static async pipelineSet(
@@ -127,6 +155,7 @@ export class Redis {
       data: any;
       field?: string;
       del?: boolean;
+      compress?: boolean;
     }[]
   ): Promise<any> {
     const pipeline = this.redis.pipeline();
@@ -145,7 +174,7 @@ export class Redis {
       } else if (op.type === 'set') {
         op.del ? pipeline.srem(key, ...op.data) : pipeline.sadd(key, ...op.data);
       } else if (op.type === 'string') {
-        op.del ? pipeline.del(key) : pipeline.set(key, op.data);
+        op.del ? pipeline.del(key) : pipeline.set(key, op.compress ? this.compress(op.data) : op.data);
       }
     }
 
