@@ -22,6 +22,10 @@
   ],
   "author": "0xCaliburSigma <0xcalibursigma@protonmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CamelotLabs/camelot-sdk"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.0",
